@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Módulo de Capacitación Interactiva (Intento Único)</title>
+    <title>Módulo de Capacitación Interactiva - Acceso de Usuario</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -12,7 +12,7 @@
         }
         .video-container {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
             max-width: 100%;
@@ -26,7 +26,6 @@
             width: 100%;
             height: 100%;
         }
-        /* Estilos para el estado de carga */
         #loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #3498db;
@@ -39,21 +38,44 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .form-container {
+            max-width: 400px;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-    <div id="app-container" class="w-full max-w-4xl mx-auto">
+    <div id="app-container" class="w-full">
         
-        <!-- Pantalla de Carga -->
         <div id="loading-screen" class="text-center p-8 bg-white rounded-lg shadow-xl">
             <div id="loader" class="mx-auto mb-4"></div>
-            <h2 class="text-xl font-semibold text-gray-700">Cargando capacitación...</h2>
-            <p class="text-gray-500">Por favor, espera un momento.</p>
+            <h2 class="text-xl font-semibold text-gray-700">Cargando...</h2>
+        </div>
+
+        <!-- Pantalla de Autenticación -->
+        <div id="auth-container" class="hidden w-full form-container mx-auto">
+            <div class="bg-white p-8 rounded-xl shadow-2xl">
+                <h2 id="auth-title" class="text-2xl font-bold text-center text-gray-800 mb-6">Iniciar Sesión</h2>
+                <form id="auth-form">
+                    <div class="mb-4">
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                        <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                        <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+                    </div>
+                    <button type="submit" id="auth-submit-button" class="w-full bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition">Iniciar Sesión</button>
+                </form>
+                <p class="text-center text-sm text-gray-600 mt-6">
+                    <span id="auth-toggle-text">¿No tienes una cuenta?</span>
+                    <button id="auth-toggle-button" class="font-semibold text-blue-600 hover:underline">Regístrate</button>
+                </p>
+            </div>
         </div>
 
         <!-- Contenedor Principal de la Capacitación -->
-        <div id="training-container" class="hidden">
+        <div id="training-container" class="hidden w-full max-w-4xl mx-auto">
             <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
                 <div class="p-6 md:p-8">
                     <div class="flex justify-between items-start mb-4">
@@ -61,99 +83,68 @@
                         <span id="slide-counter" class="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full"></span>
                     </div>
                     <hr class="mb-6">
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Columna de Contenido -->
                         <div>
                             <div id="slide-content" class="prose max-w-none text-gray-600 mb-6"></div>
                             <div id="video-wrapper" class="video-container shadow-lg">
                                 <iframe id="video-embed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                             </div>
                         </div>
-
-                        <!-- Columna de Preguntas -->
                         <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
                             <h3 class="text-lg font-semibold text-gray-800 mb-4">Pregunta para avanzar:</h3>
                             <p id="question-text" class="text-gray-700 mb-5"></p>
-                            <div id="options-container" class="space-y-3">
-                                <!-- Las opciones se generarán aquí -->
-                            </div>
+                            <div id="options-container" class="space-y-3"></div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Navegación -->
-                <div id="navigation" class="px-6 md:px-8 py-4 bg-gray-50 border-t border-gray-200 flex justify-end items-center">
-                    <button id="next-button" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300 ease-in-out disabled:bg-gray-400 disabled:cursor-not-allowed">
-                        Siguiente
-                    </button>
+                <div class="px-6 md:px-8 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                    <p class="text-sm text-gray-600">Usuario: <strong id="user-email-display"></strong></p>
+                    <button id="next-button" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400">Siguiente</button>
                 </div>
             </div>
-             <p class="text-center text-xs text-gray-400 mt-4">ID de Usuario: <span id="user-id-display"></span></p>
         </div>
 
         <!-- Pantalla de Puntuación Final -->
-        <div id="score-screen" class="hidden text-center p-8 md:p-12 bg-white rounded-xl shadow-2xl">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">¡Capacitación Completada!</h2>
-            <p class="text-gray-600 mb-6">Este es tu resultado final.</p>
+        <div id="score-screen" class="hidden w-full max-w-4xl mx-auto text-center p-8 md:p-12 bg-white rounded-xl shadow-2xl">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">¡Capacitación Completada!</h2>
+            <p class="text-gray-600 mb-6">Este es tu resultado final, <strong id="user-email-score-display"></strong>.</p>
             <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-6 rounded-lg mb-8 inline-block">
                 <p class="text-lg">Tu puntuación de aciertos:</p>
                 <p id="final-score" class="text-5xl font-bold"></p>
             </div>
-            <p class="text-gray-500 mt-4 text-sm">Gracias por completar la capacitación. Este resultado es final y no puede ser modificado.</p>
+            <div class="mt-4">
+                 <button id="logout-button" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition">Cerrar Sesión</button>
+            </div>
         </div>
-
     </div>
 
-    <!-- Modal para mensajes (uso reducido) -->
-    <div id="message-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <!-- Modal para mensajes -->
+    <div id="message-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-lg shadow-xl p-8 max-w-sm w-full text-center">
             <p id="modal-message" class="text-lg font-medium text-gray-800 mb-6"></p>
-            <button id="modal-close-button" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">
-                Entendido
-            </button>
+            <button id="modal-close-button" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700">Entendido</button>
         </div>
     </div>
 
     <script type="module">
-        // Importar funciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         
-        // --- CONFIGURACIÓN DE LA CAPACITACIÓN ---
-        const trainingData = [
-            {
-                title: "1. Introducción a la Seguridad",
-                content: `<p>La seguridad en el lugar de trabajo es fundamental para prevenir accidentes y garantizar un entorno laboral saludable.</p><p>En este módulo, aprenderás los conceptos básicos y las mejores prácticas.</p>`,
-                videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-                question: "¿Cuál es el objetivo principal de la seguridad en el trabajo?",
-                options: ["Aumentar la producción", "Prevenir accidentes y enfermedades", "Reducir las horas de trabajo"],
-                correctAnswer: 1 
-            },
-            {
-                title: "2. Equipos de Protección Personal (EPP)",
-                content: `<p>El uso correcto del Equipo de Protección Personal (EPP) es tu primera línea de defensa contra los riesgos laborales.</p><ul><li>Casco</li><li>Gafas de seguridad</li><li>Guantes</li></ul>`,
-                videoUrl: "https://www.youtube.com/embed/J-dv_b_x9y4",
-                question: "¿Qué elemento NO se considera EPP estándar en construcción?",
-                options: ["Casco", "Botas de seguridad", "Auriculares de música"],
-                correctAnswer: 2
-            },
-            {
-                title: "3. Procedimientos de Emergencia",
-                content: `<p>Saber cómo actuar durante una emergencia puede salvar vidas. Es crucial conocer las rutas de evacuación y los puntos de encuentro.</p>`,
-                videoUrl: "https://www.youtube.com/embed/3t-d9nbfJ4Y",
-                question: "¿Qué es lo primero que debes hacer al escuchar una alarma de incendio?",
-                options: ["Buscar tus pertenencias", "Terminar tu tarea actual", "Evacuar de manera ordenada por la ruta designada"],
-                correctAnswer: 2
-            }
-        ];
-
-        // --- LÓGICA DE LA APLICACIÓN ---
-        
+        // --- ELEMENTOS DEL DOM ---
         const loadingScreen = document.getElementById('loading-screen');
+        const authContainer = document.getElementById('auth-container');
         const trainingContainer = document.getElementById('training-container');
         const scoreScreen = document.getElementById('score-screen');
+        // Formulario de Auth
+        const authForm = document.getElementById('auth-form');
+        const authTitle = document.getElementById('auth-title');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const authSubmitButton = document.getElementById('auth-submit-button');
+        const authToggleText = document.getElementById('auth-toggle-text');
+        const authToggleButton = document.getElementById('auth-toggle-button');
+        // ... otros elementos
         const slideTitle = document.getElementById('slide-title');
         const slideCounter = document.getElementById('slide-counter');
         const slideContent = document.getElementById('slide-content');
@@ -163,115 +154,165 @@
         const optionsContainer = document.getElementById('options-container');
         const nextButton = document.getElementById('next-button');
         const finalScore = document.getElementById('final-score');
-        const userIdDisplay = document.getElementById('user-id-display');
+        const userEmailDisplay = document.getElementById('user-email-display');
+        const userEmailScoreDisplay = document.getElementById('user-email-score-display');
+        const logoutButton = document.getElementById('logout-button');
         const messageModal = document.getElementById('message-modal');
         const modalMessage = document.getElementById('modal-message');
         const modalCloseButton = document.getElementById('modal-close-button');
 
+        // --- ESTADO DE LA APLICACIÓN ---
+        let isLoginMode = true;
         let appState = {
             currentPage: 0,
             userAnswers: {},
             score: 0,
             selectedOption: null,
-            userId: null,
-            isAuthReady: false,
+            user: null,
         };
 
+        // --- CONFIGURACIÓN DE FIREBASE ---
         let db, auth;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        
         try {
-            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            const firebaseConfig = {
+                apiKey: "AIzaSyCV0e56eJOJGikpG4b7Bf9KpUhBkuCQF40",
+                authDomain: "capacitacion-2197b.firebaseapp.com",
+                projectId: "capacitacion-2197b",
+                storageBucket: "capacitacion-2197b.appspot.com",
+                messagingSenderId: "924119865231",
+                appId: "1:924119865231:web:0850074d7e8b523e7a1dfa"
+            };
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
         } catch (e) {
-            console.error("Error al inicializar Firebase. Usando modo offline.", e);
-            showModal("No se pudo conectar a la base de datos. Tu progreso no se guardará.");
-            appState.isAuthReady = true;
-            initializeAppUI();
+            console.error("Error al inicializar Firebase.", e);
+            showModal("Error crítico de configuración. La aplicación no puede iniciarse.");
         }
 
-        onAuthStateChanged(auth, async (user) => {
+        // --- LÓGICA DE AUTENTICACIÓN ---
+        
+        // Observador del estado de autenticación
+        onAuthStateChanged(auth, (user) => {
+            loadingScreen.classList.add('hidden');
             if (user) {
-                appState.userId = user.uid;
-            } else {
-                try {
-                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                    if (token) {
-                        await signInWithCustomToken(auth, token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) {
-                    console.error("Error de autenticación:", error);
-                    showModal("Error de autenticación. El progreso no se guardará.");
-                }
-            }
-            
-            if (appState.userId && !appState.isAuthReady) {
-                appState.isAuthReady = true;
-                userIdDisplay.textContent = appState.userId;
+                // Usuario ha iniciado sesión
+                appState.user = user;
+                authContainer.classList.add('hidden');
+                userEmailDisplay.textContent = user.email;
+                userEmailScoreDisplay.textContent = user.email;
                 loadProgress();
+            } else {
+                // Usuario no ha iniciado sesión
+                appState.user = null;
+                authContainer.classList.remove('hidden');
+                trainingContainer.classList.add('hidden');
+                scoreScreen.classList.add('hidden');
             }
         });
 
-        function loadProgress() {
-            if (!db || !appState.userId) {
-                initializeAppUI();
-                return;
-            }
-            const progressDocRef = doc(db, `artifacts/${appId}/users/${appState.userId}/training_progress`, "user_state");
+        // Cambiar entre modo Login y Registro
+        authToggleButton.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            authTitle.textContent = isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta';
+            authSubmitButton.textContent = isLoginMode ? 'Iniciar Sesión' : 'Registrarse';
+            authToggleText.textContent = isLoginMode ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?';
+            authToggleButton.textContent = isLoginMode ? 'Regístrate' : 'Inicia Sesión';
+        });
 
-            getDoc(progressDocRef).then(docSnap => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.completed) {
-                         appState.score = data.score || 0;
-                         appState.currentPage = data.currentPage || trainingData.length;
-                         loadingScreen.classList.add('hidden');
-                         showScoreScreen();
-                         return;
-                    }
-                    appState.currentPage = data.currentPage || 0;
-                    appState.userAnswers = data.userAnswers || {};
-                    appState.score = data.score || 0;
+        // Manejar envío del formulario (Login o Registro)
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, password);
                 }
-                initializeAppUI();
-            }).catch(error => {
-                console.error("Error al cargar el progreso: ", error);
-                initializeAppUI();
-            });
+            } catch (error) {
+                handleAuthError(error);
+            }
+        });
+
+        // Cerrar sesión
+        logoutButton.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        function handleAuthError(error) {
+            let message = "Ocurrió un error inesperado.";
+            switch (error.code) {
+                case 'auth/invalid-email':
+                    message = "El formato del correo electrónico no es válido.";
+                    break;
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                    message = "Correo o contraseña incorrectos.";
+                    break;
+                case 'auth/email-already-in-use':
+                    message = "Este correo electrónico ya está registrado.";
+                    break;
+                case 'auth/weak-password':
+                    message = "La contraseña debe tener al menos 6 caracteres.";
+                    break;
+                default:
+                    console.error("Error de autenticación no manejado:", error);
+            }
+            showModal(message);
+        }
+
+        // --- LÓGICA DE LA CAPACITACIÓN ---
+        const trainingData = [ /* ... tu data de capacitación no cambia ... */ 
+            { title: "1. Introducción a la Seguridad", content: `<p>La seguridad en el lugar de trabajo es fundamental...</p>`, videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", question: "¿Cuál es el objetivo principal de la seguridad en el trabajo?", options: ["Aumentar la producción", "Prevenir accidentes y enfermedades", "Reducir las horas de trabajo"], correctAnswer: 1 },
+            { title: "2. Equipos de Protección Personal (EPP)", content: `<p>El uso correcto del Equipo de Protección Personal...</p>`, videoUrl: "https://www.youtube.com/embed/J-dv_b_x9y4", question: "¿Qué elemento NO se considera EPP estándar en construcción?", options: ["Casco", "Botas de seguridad", "Auriculares de música"], correctAnswer: 2 },
+            { title: "3. Procedimientos de Emergencia", content: `<p>Saber cómo actuar durante una emergencia...</p>`, videoUrl: "https://www.youtube.com/embed/3t-d9nbfJ4Y", question: "¿Qué es lo primero que debes hacer al escuchar una alarma de incendio?", options: ["Buscar tus pertenencias", "Terminar tu tarea actual", "Evacuar de manera ordenada por la ruta designada"], correctAnswer: 2 }
+        ];
+
+        async function loadProgress() {
+            if (!db || !appState.user) return;
+            const progressDocRef = doc(db, "user_progress", appState.user.uid);
+            const docSnap = await getDoc(progressDocRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                appState.score = data.score || 0;
+                appState.currentPage = data.currentPage || 0;
+                if (data.completed) {
+                    showScoreScreen();
+                } else {
+                    renderPage(appState.currentPage);
+                }
+            } else {
+                // Es la primera vez del usuario
+                appState.score = 0;
+                appState.currentPage = 0;
+                renderPage(0);
+            }
         }
 
         async function saveProgress() {
-            if (!db || !appState.userId) return;
-            const progressDocRef = doc(db, `artifacts/${appId}/users/${appState.userId}/training_progress`, "user_state");
+            if (!db || !appState.user) return;
+            const progressDocRef = doc(db, "user_progress", appState.user.uid);
             try {
                 await setDoc(progressDocRef, {
+                    email: appState.user.email,
                     currentPage: appState.currentPage,
-                    userAnswers: appState.userAnswers,
                     score: appState.score,
                     completed: appState.currentPage >= trainingData.length,
                     lastUpdate: new Date().toISOString()
-                });
+                }, { merge: true });
             } catch (error) {
                 console.error("Error al guardar el progreso: ", error);
                 showModal("Hubo un problema al guardar tu progreso.");
             }
         }
         
-        function initializeAppUI() {
-            loadingScreen.classList.add('hidden');
-            if (appState.currentPage >= trainingData.length) {
-                showScoreScreen();
-            } else {
-                trainingContainer.classList.remove('hidden');
-                renderPage(appState.currentPage);
-            }
-        }
-
         function renderPage(pageIndex) {
+            trainingContainer.classList.remove('hidden');
+            scoreScreen.classList.add('hidden');
             const pageData = trainingData[pageIndex];
             
             slideTitle.textContent = pageData.title;
@@ -294,7 +335,7 @@
                 const button = document.createElement('button');
                 button.textContent = option;
                 button.dataset.index = index;
-                button.className = "w-full text-left p-4 rounded-lg border-2 border-gray-300 bg-white hover:bg-gray-100 hover:border-blue-500 transition duration-200";
+                button.className = "w-full text-left p-4 rounded-lg border-2 border-gray-300 bg-white hover:bg-gray-100 hover:border-blue-500 transition";
                 button.onclick = () => handleOptionSelect(index, button);
                 optionsContainer.appendChild(button);
             });
@@ -302,43 +343,26 @@
 
         function handleOptionSelect(index, button) {
             appState.selectedOption = index;
-            
             Array.from(optionsContainer.children).forEach(child => {
                 child.classList.remove('border-blue-600', 'bg-blue-50', 'font-semibold');
-                child.classList.add('border-gray-300', 'bg-white');
             });
             button.classList.add('border-blue-600', 'bg-blue-50', 'font-semibold');
-            button.classList.remove('border-gray-300', 'bg-white');
-            
             nextButton.disabled = false;
         }
 
         nextButton.addEventListener('click', () => {
             if (appState.selectedOption === null) return;
-
-            const currentPageData = trainingData[appState.currentPage];
-            const isCorrect = appState.selectedOption === currentPageData.correctAnswer;
-            
-            appState.userAnswers[appState.currentPage] = appState.selectedOption;
+            const isCorrect = appState.selectedOption === trainingData[appState.currentPage].correctAnswer;
             if (isCorrect) {
                 appState.score++;
             }
-
-            Array.from(optionsContainer.children).forEach(child => {
-                child.disabled = true;
-            });
-            nextButton.disabled = true;
-
             appState.currentPage++;
             saveProgress();
-
-            setTimeout(() => {
-                if (appState.currentPage < trainingData.length) {
-                    renderPage(appState.currentPage);
-                } else {
-                    showScoreScreen();
-                }
-            }, 300);
+            if (appState.currentPage < trainingData.length) {
+                renderPage(appState.currentPage);
+            } else {
+                showScoreScreen();
+            }
         });
 
         function showScoreScreen() {
@@ -356,7 +380,6 @@
         modalCloseButton.addEventListener('click', () => {
             messageModal.classList.add('hidden');
         });
-
     </script>
 </body>
 </html>
