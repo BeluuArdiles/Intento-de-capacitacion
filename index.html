@@ -196,14 +196,14 @@
         onAuthStateChanged(auth, (user) => {
             loadingScreen.classList.add('hidden');
             if (user) {
-                // Usuario ha iniciado sesión
+                console.log("Auth state changed: User is logged in.", user.email);
                 appState.user = user;
                 authContainer.classList.add('hidden');
                 userEmailDisplay.textContent = user.email;
                 userEmailScoreDisplay.textContent = user.email;
                 loadProgress();
             } else {
-                // Usuario no ha iniciado sesión
+                console.log("Auth state changed: User is logged out.");
                 appState.user = null;
                 authContainer.classList.remove('hidden');
                 trainingContainer.classList.add('hidden');
@@ -265,31 +265,46 @@
         }
 
         // --- LÓGICA DE LA CAPACITACIÓN ---
-        const trainingData = [ /* ... tu data de capacitación no cambia ... */ 
+        const trainingData = [
             { title: "1. Introducción a la Seguridad", content: `<p>La seguridad en el lugar de trabajo es fundamental...</p>`, videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", question: "¿Cuál es el objetivo principal de la seguridad en el trabajo?", options: ["Aumentar la producción", "Prevenir accidentes y enfermedades", "Reducir las horas de trabajo"], correctAnswer: 1 },
             { title: "2. Equipos de Protección Personal (EPP)", content: `<p>El uso correcto del Equipo de Protección Personal...</p>`, videoUrl: "https://www.youtube.com/embed/J-dv_b_x9y4", question: "¿Qué elemento NO se considera EPP estándar en construcción?", options: ["Casco", "Botas de seguridad", "Auriculares de música"], correctAnswer: 2 },
             { title: "3. Procedimientos de Emergencia", content: `<p>Saber cómo actuar durante una emergencia...</p>`, videoUrl: "https://www.youtube.com/embed/3t-d9nbfJ4Y", question: "¿Qué es lo primero que debes hacer al escuchar una alarma de incendio?", options: ["Buscar tus pertenencias", "Terminar tu tarea actual", "Evacuar de manera ordenada por la ruta designada"], correctAnswer: 2 }
         ];
 
         async function loadProgress() {
-            if (!db || !appState.user) return;
+            console.log("loadProgress: Function started.");
+            if (!db || !appState.user) {
+                 console.log("loadProgress: DB or User not ready. Aborting.");
+                return;
+            }
             const progressDocRef = doc(db, "user_progress", appState.user.uid);
-            const docSnap = await getDoc(progressDocRef);
+            
+            try {
+                const docSnap = await getDoc(progressDocRef);
+                console.log("loadProgress: getDoc successful.");
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                appState.score = data.score || 0;
-                appState.currentPage = data.currentPage || 0;
-                if (data.completed) {
-                    showScoreScreen();
+                if (docSnap.exists()) {
+                    console.log("loadProgress: Document exists.");
+                    const data = docSnap.data();
+                    appState.score = data.score || 0;
+                    appState.currentPage = data.currentPage || 0;
+                    if (data.completed) {
+                        console.log("loadProgress: User has completed training. Showing score screen.");
+                        showScoreScreen();
+                    } else {
+                        console.log(`loadProgress: User is on page ${appState.currentPage}. Rendering page.`);
+                        renderPage(appState.currentPage);
+                    }
                 } else {
-                    renderPage(appState.currentPage);
+                    console.log("loadProgress: Document does not exist. Starting new training.");
+                    // Es la primera vez del usuario
+                    appState.score = 0;
+                    appState.currentPage = 0;
+                    renderPage(0);
                 }
-            } else {
-                // Es la primera vez del usuario
-                appState.score = 0;
-                appState.currentPage = 0;
-                renderPage(0);
+            } catch (error) {
+                console.error("loadProgress: Error getting document:", error);
+                showModal("Hubo un error al cargar tu progreso. Revisa las reglas de seguridad de tu base de datos en Firebase.");
             }
         }
 
@@ -311,6 +326,7 @@
         }
         
         function renderPage(pageIndex) {
+            console.log(`renderPage: Rendering page ${pageIndex}.`);
             trainingContainer.classList.remove('hidden');
             scoreScreen.classList.add('hidden');
             const pageData = trainingData[pageIndex];
@@ -366,6 +382,7 @@
         });
 
         function showScoreScreen() {
+            console.log("showScoreScreen: Showing final score.");
             trainingContainer.classList.add('hidden');
             scoreScreen.classList.remove('hidden');
             const percentage = Math.round((appState.score / trainingData.length) * 100);
