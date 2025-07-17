@@ -109,8 +109,18 @@
             <h2 class="text-3xl font-bold text-gray-800 mb-2">¡Capacitación Completada!</h2>
             <p class="text-gray-600 mb-6">Este es tu resultado final, <strong id="user-email-score-display"></strong>.</p>
             <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-6 rounded-lg mb-8 inline-block">
-                <p class="text-lg">Tu puntuación de aciertos:</p>
-                <p id="final-score" class="text-5xl font-bold"></p>
+                <p class="text-lg mb-4">Tus resultados</p>
+                <div class="flex items-baseline justify-center space-x-8">
+                    <div>
+                        <p class="text-sm uppercase tracking-wider">Aciertos</p>
+                        <p id="raw-score" class="text-4xl font-bold"></p>
+                    </div>
+                    <div class="border-l border-blue-300 h-16"></div>
+                    <div>
+                        <p class="text-sm uppercase tracking-wider">Puntuación</p>
+                        <p id="final-score" class="text-5xl font-bold"></p>
+                    </div>
+                </div>
             </div>
             <div class="mt-4">
                  <button id="logout-button" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition">Cerrar Sesión</button>
@@ -154,6 +164,7 @@
         const optionsContainer = document.getElementById('options-container');
         const nextButton = document.getElementById('next-button');
         const finalScore = document.getElementById('final-score');
+        const rawScoreEl = document.getElementById('raw-score');
         const userEmailDisplay = document.getElementById('user-email-display');
         const userEmailScoreDisplay = document.getElementById('user-email-score-display');
         const logoutButton = document.getElementById('logout-button');
@@ -192,18 +203,15 @@
 
         // --- LÓGICA DE AUTENTICACIÓN ---
         
-        // Observador del estado de autenticación
         onAuthStateChanged(auth, (user) => {
             loadingScreen.classList.add('hidden');
             if (user) {
-                console.log("Auth state changed: User is logged in.", user.email);
                 appState.user = user;
                 authContainer.classList.add('hidden');
                 userEmailDisplay.textContent = user.email;
                 userEmailScoreDisplay.textContent = user.email;
                 loadProgress();
             } else {
-                console.log("Auth state changed: User is logged out.");
                 appState.user = null;
                 authContainer.classList.remove('hidden');
                 trainingContainer.classList.add('hidden');
@@ -211,7 +219,6 @@
             }
         });
 
-        // Cambiar entre modo Login y Registro
         authToggleButton.addEventListener('click', () => {
             isLoginMode = !isLoginMode;
             authTitle.textContent = isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta';
@@ -220,12 +227,10 @@
             authToggleButton.textContent = isLoginMode ? 'Regístrate' : 'Inicia Sesión';
         });
 
-        // Manejar envío del formulario (Login o Registro)
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = emailInput.value;
             const password = passwordInput.value;
-
             try {
                 if (isLoginMode) {
                     await signInWithEmailAndPassword(auth, email, password);
@@ -237,7 +242,6 @@
             }
         });
 
-        // Cerrar sesión
         logoutButton.addEventListener('click', () => {
             signOut(auth);
         });
@@ -272,38 +276,26 @@
         ];
 
         async function loadProgress() {
-            console.log("loadProgress: Function started.");
-            if (!db || !appState.user) {
-                 console.log("loadProgress: DB or User not ready. Aborting.");
-                return;
-            }
+            if (!db || !appState.user) return;
             const progressDocRef = doc(db, "user_progress", appState.user.uid);
-            
             try {
                 const docSnap = await getDoc(progressDocRef);
-                console.log("loadProgress: getDoc successful.");
-
                 if (docSnap.exists()) {
-                    console.log("loadProgress: Document exists.");
                     const data = docSnap.data();
                     appState.score = data.score || 0;
                     appState.currentPage = data.currentPage || 0;
                     if (data.completed) {
-                        console.log("loadProgress: User has completed training. Showing score screen.");
                         showScoreScreen();
                     } else {
-                        console.log(`loadProgress: User is on page ${appState.currentPage}. Rendering page.`);
                         renderPage(appState.currentPage);
                     }
                 } else {
-                    console.log("loadProgress: Document does not exist. Starting new training.");
-                    // Es la primera vez del usuario
                     appState.score = 0;
                     appState.currentPage = 0;
                     renderPage(0);
                 }
             } catch (error) {
-                console.error("loadProgress: Error getting document:", error);
+                console.error("Error al cargar el progreso:", error);
                 showModal("Hubo un error al cargar tu progreso. Revisa las reglas de seguridad de tu base de datos en Firebase.");
             }
         }
@@ -311,11 +303,16 @@
         async function saveProgress() {
             if (!db || !appState.user) return;
             const progressDocRef = doc(db, "user_progress", appState.user.uid);
+            
+            // **CAMBIO CLAVE: Calcular y añadir el porcentaje**
+            const scorePercentage = Math.round((appState.score / trainingData.length) * 100);
+
             try {
                 await setDoc(progressDocRef, {
                     email: appState.user.email,
                     currentPage: appState.currentPage,
                     score: appState.score,
+                    scorePercentage: scorePercentage, // <-- NUEVO CAMPO
                     completed: appState.currentPage >= trainingData.length,
                     lastUpdate: new Date().toISOString()
                 }, { merge: true });
@@ -326,7 +323,6 @@
         }
         
         function renderPage(pageIndex) {
-            console.log(`renderPage: Rendering page ${pageIndex}.`);
             trainingContainer.classList.remove('hidden');
             scoreScreen.classList.add('hidden');
             const pageData = trainingData[pageIndex];
@@ -382,10 +378,12 @@
         });
 
         function showScoreScreen() {
-            console.log("showScoreScreen: Showing final score.");
             trainingContainer.classList.add('hidden');
             scoreScreen.classList.remove('hidden');
+            
             const percentage = Math.round((appState.score / trainingData.length) * 100);
+            
+            rawScoreEl.textContent = `${appState.score}/${trainingData.length}`;
             finalScore.textContent = `${percentage}%`;
         }
         
